@@ -27,26 +27,27 @@ public class RacetyperPanel extends JPanel implements MouseListener
    private String line = "";
    protected static boolean shiftPressed;                //is shift being held down?
    
-   private MyQueue<String> wordList = new MyQueue<String>();
-   
+   private MyQueue<String> wordQ = new MyQueue<String>();
+   private Scanner infile;
+   private LinkedList<String> words = new LinkedList<String>();
    
    //**IMAGES**
    private ImageIcon RedCar = new ImageIcon("Images/RedCar.png");
    private ImageIcon Window = new ImageIcon("Images/Window.png");
-   
+   private ImageIcon TypeBox = new ImageIcon("Images/TypeBox.png");
    
    public RacetyperPanel()
    { 
       //addMouseListener(this);
       //mouseX = 0;
       //mouseY = 0;
-      
       shiftPressed = false;
+      inputWords();
+      add20();
    }
   
-   public void inputWords()
+   public void inputWords() //adds every word in words.txt into a linkedlist
    {
-      Scanner infile = null;
       try
       {
          infile = new Scanner(new File("words.txt"));
@@ -57,10 +58,29 @@ public class RacetyperPanel extends JPanel implements MouseListener
          System.exit(0);
       }
       
-      while((wordList == null || wordList.size() < 20) && infile.hasNextLine())
+      while(infile.hasNextLine())
       {
-         wordList.add(infile.nextLine());
+         words.add(infile.nextLine());
       }
+   }
+   
+   public void add20()
+   {
+      for(int i = 0; i < 20; i++)
+      {
+         int x = (int)( Math.random() * words.size() );
+         String temp = words.get(x);
+         words.remove(x);
+         wordQ.add(temp);
+      }
+   }
+   
+   public void addWord()
+   {
+      int x = (int)( Math.random() * words.size() );
+      String temp = words.get(x);
+      words.remove(x);
+      wordQ.add(temp);
    }
   
    //**GRAPHICS**
@@ -70,15 +90,16 @@ public class RacetyperPanel extends JPanel implements MouseListener
       g.setColor(Color.white);		//set background color to white
       g.fillRect(0, 0, 3000, 2000); //fill the whole window with white
       g.setColor(Color.gray);       //set bg color to gray for control window
-      g.fillRect(0, 0, 1500, 90);
-      g.drawImage(Window.getImage(), 20, 150, 500, 250, null);
+      g.fillRect(0, 0, 1500, 200);
+      g.drawImage(Window.getImage(), 18, 320, 750, 150, null);
+      g.drawImage(TypeBox.getImage(), 24, 500, 300, 30, null); 
       //DRAW THE CONTROLS AND INFO
       
-      inputWords();
+      
       g.setColor(Color.black);
-      g.setFont(new Font("SansSerif", Font.BOLD, 16)); 
-      drawString(g, wordList.toString(), 20, 20);
-      g.drawString(line, 20, 150);
+      g.setFont(new Font("SansSerif", Font.BOLD, 17)); 
+      drawString(g, wordQ.toString(), 30, 330);
+      g.drawString(line, 28, 520);
       
    }
    
@@ -89,8 +110,12 @@ public class RacetyperPanel extends JPanel implements MouseListener
    }
 
    public void processUserInput(int k)
-   {  
-      if(k == KeyEvent.VK_ESCAPE) //Exits if user presses escape
+   {     
+      if(line.length() > 23 && !(k == KeyEvent.VK_BACK_SPACE) && !(k == KeyEvent.VK_ESCAPE))
+      {
+         //do nothing
+      }
+      else if(k == KeyEvent.VK_ESCAPE) //Exits if user presses escape
          System.exit(1);
       else if(k == KeyEvent.VK_SPACE) //space
          line += " ";
@@ -246,11 +271,43 @@ public class RacetyperPanel extends JPanel implements MouseListener
          else
             line += "`";
       }
+      else if(k==KeyEvent.VK_LEFT)
+      {
+         //do nothing right now, will edit to make cursor move left
+      }
+      else if(k==KeyEvent.VK_RIGHT)
+      {
+         //do nothing right now, will edit to make cursor move right
+      }
+      else if(k==KeyEvent.VK_UP)
+      {
+         //do nothing
+      }
+      else if(k==KeyEvent.VK_DOWN)
+      {
+         //do nothing
+      }
+      else if(k==KeyEvent.VK_ENTER)
+      {
+         //do nothing
+      }
       else if(shiftPressed)
          line += KeyEvent.getKeyText(k);
       else 
          line += KeyEvent.getKeyText(k).toLowerCase();
+         
+      checkWord(line);
       repaint();
+   }
+   
+   public void checkWord(String l)
+   {
+      if(l.equals(wordQ.peek()+" "))
+      {
+         line = "";
+         wordQ.remove();
+         addWord();
+      }
    }
    
    public void mouseMoved(MouseEvent e)
